@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Prompt security risk dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#f7f6f2; --card:#ffffff; --border:#e1e0d9; --border-strong:#b4b2a9;
+    --text:#2c2c2a; --text-secondary:#5f5e5a; --text-muted:#898781;
+    --danger-bg:#fcebeb; --danger-text:#791f1f; --grid:#e1e0d9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#1a1a19; --card:#242423; --border:#3a3a38; --border-strong:#54534f;
+      --text:#f0efe9; --text-secondary:#c3c2b7; --text-muted:#8b8a84;
+      --danger-bg:#501313; --danger-text:#f7c1c1; --grid:#2c2c2a;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); padding:24px;
+  }
+  h1{font-size:20px; font-weight:600; margin:0 0 4px;}
+  .sub{color:var(--text-secondary); font-size:13px; margin:0 0 20px;}
+  .kpi-row{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px;}
+  @media (max-width:800px){ .kpi-row{grid-template-columns:repeat(2,1fr);} }
+  .kpi{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 16px;}
+  .kpi.danger{background:var(--danger-bg);}
+  .kpi .l{font-size:12px; color:var(--text-secondary); margin-bottom:4px;}
+  .kpi.danger .l{color:var(--danger-text);}
+  .kpi .n{font-size:24px; font-weight:600;}
+  .kpi.danger .n{color:var(--danger-text);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
+  @media (max-width:800px){ .grid2{grid-template-columns:1fr;} }
+  .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px;}
+  .card h2{font-size:14px; font-weight:600; margin:0 0 10px;}
+  .chart-wrap{position:relative; width:100%;}
+  .legend{display:flex; gap:14px; font-size:12px; color:var(--text-secondary); margin-top:8px; flex-wrap:wrap;}
+  .dot{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:middle;}
+  table.top{width:100%; font-size:13px; border-collapse:collapse;}
+  table.top th{text-align:left; color:var(--text-muted); font-weight:500; font-size:11px; text-transform:uppercase; padding:4px 8px; border-bottom:1px solid var(--border);}
+  table.top td{padding:8px; border-bottom:1px solid var(--border);}
+  .badge{font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600;}
+  .badge.critical{background:rgba(226,75,74,0.18); color:#E24B4A;}
+  .badge.high{background:rgba(216,90,48,0.15); color:#D85A30;}
+  .note{font-size:12px; color:var(--text-muted); margin-top:16px;}
+</style>
+</head>
+<body>
+
+<h1>Prompt security risk dashboard</h1>
+<p class="sub">Sample data for illustration. Wire the arrays in the script tag to your real prompt-log export.</p>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="l">Prompts scanned</div><div class="n" id="kpiScanned">48,210</div></div>
+  <div class="kpi"><div class="l">Flagged</div><div class="n" id="kpiFlagged">1,342</div></div>
+  <div class="kpi danger"><div class="l">Critical severity</div><div class="n" id="kpiCritical">37</div></div>
+  <div class="kpi"><div class="l">Employees involved</div><div class="n" id="kpiEmployees">89</div></div>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <h2>Flagged prompts by category</h2>
+    <div class="chart-wrap" style="height:240px;">
+      <canvas id="catChart" role="img" aria-label="Bar chart of flagged prompts by risk category">Credentials/secrets 480, PII 390, confidential business data 260, prompt injection 140, regulatory data 72</canvas>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Top teams by flagged prompts</h2>
+    <div class="chart-wrap" style="height:240px;">
+      <canvas id="teamChart" role="img" aria-label="Horizontal bar chart of flagged prompt counts by team">Sales 310, Customer support 275, Engineering 240, Finance 190, Marketing 150, HR 90</canvas>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+  <h2>Flagged prompts over time, by severity</h2>
+  <div class="chart-wrap" style="height:260px;">
+    <canvas id="trendChart" role="img" aria-label="Stacked area chart of flagged prompts per week, split into low, medium, high, critical severity">Trend rises from week 1 to week 8, critical severity spikes in week 6</canvas>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#2a78d6"></span>Low</span>
+    <span><span class="dot" style="background:#eda100"></span>Medium</span>
+    <span><span class="dot" style="background:#eb6834"></span>High</span>
+    <span><span class="dot" style="background:#d03b3b"></span>Critical</span>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Top flagged employees this period</h2>
+  <table class="top" id="topTable">
+    <thead><tr><th>Employee</th><th>Team</th><th>Flagged</th><th>Top severity</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<p class="note">Numbers on this page are illustrative sample data, not real employee activity.</p>
+
+<script>
+// ---- Replace with your real aggregated data ----
+const kpis = { scanned:48210, flagged:1342, critical:37, employees:89 };
+
+const categoryData = {
+  labels:['Credentials/secrets','PII','Confidential data','Prompt injection','Regulatory data'],
+  values:[480,390,260,140,72]
+};
+
+const teamData = {
+  labels:['Sales','Customer support','Engineering','Finance','Marketing','HR'],
+  values:[310,275,240,190,150,90]
+};
+
+const trendData = {
+  labels:['W1','W2','W3','W4','W5','W6','W7','W8'],
+  low:      [40,45,50,55,60,58,62,65],
+  medium:   [20,22,28,30,35,40,38,42],
+  high:     [8,10,12,15,18,25,20,22],
+  critical: [1,2,2,3,4,12,5,8]
+};
+
+const topEmployees = [
+  {name:'D. Shah', team:'Engineering', flagged:14, topSev:'critical'},
+  {name:'M. Ortiz', team:'Customer support', flagged:11, topSev:'critical'},
+  {name:'A. Chen', team:'Finance', flagged:9, topSev:'critical'},
+  {name:'S. Lindqvist', team:'Engineering', flagged:7, topSev:'high'},
+  {name:'R. Patel', team:'Sales', flagged:6, topSev:'high'},
+  {name:'K. Novak', team:'Marketing', flagged:5, topSev:'high'}
+];
+
+// ---- Render KPIs ----
+document.getElementById('kpiScanned').textContent = kpis.scanned.toLocaleString();
+document.getElementById('kpiFlagged').textContent = kpis.flagged.toLocaleString();
+document.getElementById('kpiCritical').textContent = kpis.critical.toLocaleString();
+document.getElementById('kpiEmployees').textContent = kpis.employees.toLocaleString();
+
+// ---- Render table ----
+const tbody = document.querySelector('#topTable tbody');
+topEmployees.forEach(e => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td>' + e.name + '</td><td>' + e.team + '</td><td>' + e.flagged +
+    '</td><td><span class="badge ' + e.topSev + '">' + e.topSev + '</span></td>';
+  tbody.appendChild(tr);
+});
+
+// ---- Chart styling helpers ----
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const muted = '#898781';
+const grid = isDark ? '#2c2c2a' : '#e1e0d9';
+
+new Chart(document.getElementById('catChart'), {
+  type: 'bar',
+  data: {
+    labels: categoryData.labels,
+    datasets: [{ data: categoryData.values, backgroundColor: '#e34948', borderRadius: 4, maxBarThickness: 28 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { display:false }, ticks: { color: muted, font:{size:11} } },
+      y: { grid: { color: grid }, ticks: { color: muted } }
+    }
+  }
+});
+
+new Chart(document.getElementById('teamChart'), {
+  type: 'bar',
+  data: {
+    labels: teamData.labels,
+    datasets: [{ data: teamData.values, backgroundColor:'#4a3aa7', borderRadius:4, maxBarThickness:22 }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { color: grid }, ticks: { color: muted } },
+      y: { grid: { display:false }, ticks: { color: muted } }
+    }
+  }
+});
+
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: trendData.labels,
+    datasets: [
+      { label:'Low', data:trendData.low, borderColor:'#2a78d6', backgroundColor:'rgba(42,120,214,0.1)', fill:true, tension:0.3, pointRadius:0 },
+      { label:'Medium', data:trendData.medium, borderColor:'#eda100', backgroundColor:'rgba(237,161,0,0.1)', fill:true, tension:0.3, pointRadius:0 },
+      { label:'High', data:trendData.high, borderColor:'#eb6834', backgroundColor:'rgba(235,104,52,0.1)', fill:true, tension:0.3, pointRadius:0 },
+      { label:'Critical', data:trendData.critical, borderColor:'#d03b3b', backgroundColor:'rgba(208,59,59,0.1)', fill:true, tension:0.3, pointRadius:0 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { display:false }, ticks: { color: muted } },
+      y: { grid: { color: grid }, ticks: { color: muted } }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
