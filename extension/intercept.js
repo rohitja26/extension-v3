@@ -1,3 +1,12 @@
+/**
+ * EXTENSION FLOW - STEP 2 (GitHub Copilot): Main World Interceptor (MAIN World)
+ * 
+ * Use Case:
+ * Executed directly inside the context of GitHub pages. It overrides window.fetch
+ * and navigator.sendBeacon to inspect outbound network requests. When a Copilot conversation
+ * event or telemetry request is detected, it parses the content and dispatches a
+ * custom DOM event ('CopilotPromptCaptured') with the prompt details.
+ */
 (function() {
     const originalFetch = window.fetch;
     const originalSendBeacon = navigator.sendBeacon;

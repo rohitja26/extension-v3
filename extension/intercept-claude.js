@@ -1,3 +1,12 @@
+/**
+ * EXTENSION FLOW - STEP 2 (Claude): Main World Interceptor (MAIN World)
+ * 
+ * Use Case:
+ * Executed directly inside the context of Claude.ai pages. It overrides window.fetch
+ * to intercept Claude completion calls. Once detected, it extracts prompt and
+ * conversation ID, and dispatches a custom DOM event ('ClaudePromptCaptured')
+ * containing the prompt details.
+ */
 (function() {
     const originalFetch = window.fetch;
 

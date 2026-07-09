@@ -1,3 +1,11 @@
+/**
+ * EXTENSION FLOW - STEP 4: Background Service Worker (Extension Background Context)
+ * 
+ * Use Case:
+ * Listens for incoming message payloads sent by the content script (Step 3).
+ * It queues these logs in chrome.storage.local and triggers a periodic alarm 
+ * (every 30 seconds) to flush the queued logs to the backend service.
+ */
 const API_URL = 'http://localhost:3000/api/copilot/log';
 const ALARM_NAME = 'flushCopilotLogs';
 const ALARM_PERIOD_MINUTES = 0.5; // 30 seconds

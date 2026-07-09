@@ -1,4 +1,5 @@
 {
+  "_flow_comment": "EXTENSION FLOW - STEP 1: Defines permissions, execution contexts (MAIN vs ISOLATED worlds), and service worker setup.",
   "manifest_version": 3,
   "name": "GitHub Copilot Tracker POC",
   "version": "1.0",
