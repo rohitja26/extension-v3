@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+
+# Extension / local runtime artifacts
+*.log
+*.xlsx
+*.xls
+*.csv
+*.bak
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code settings
+.vscode/
+
+# Build output
+/dist/
+/build/
+coverage/
+
+# Backup files
+*.swp
+*.swo

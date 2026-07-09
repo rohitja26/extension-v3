@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub Copilot Tracker POC",
+  "version": "1.0",
+  "description": "Captures GitHub Copilot chat prompts for usage tracking.",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://claude.ai/*",
+    "http://localhost:3000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "world": "ISOLATED"
+    },
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["intercept.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "world": "ISOLATED"
+    },
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["intercept-claude.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}
